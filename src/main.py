@@ -14,10 +14,7 @@ class GitHubActivity():
             url = f"{self.base_url}{username}"
         else:
             url = f"{self.base_url}{username}/{route}"
-        querry_params = {
-            "sort": "updated",
-            "per_page": sort
-        }
+        querry_params = {"sort": "updated", "per_page": sort}
         print(url)
         user_data = requests.get(url=url, params=querry_params) # 'user_data' is the response and it is already a python dictionary.
         self.to_json(user_data.json(), self.filename)
@@ -33,15 +30,25 @@ class GitHubActivity():
         
     def get_activity(self, username, n_recent):
         url = f"{self.base_url}{username}/events"
-        querry_params = {
-            "sort": "updated", 
-            "per_page":n_recent
-        }
+        querry_params = {"sort": "updated", "per_page":n_recent}
         event = requests.get(url=url, params=querry_params).json()
         action, createdAt, public = event[0]["type"], event[0]["created_at"], event[0]["public"]
         repo_name = str(event[0]["repo"]["name"]).split("/")[1]
         repo_url =  f"{self.github_url}{username}/{repo_name}"
-        return action, createdAt, repo_name, repo_url, public
+        event_data = [action, createdAt, repo_name, repo_url, public]
+        self.format_output(event_data)
+        return event_data
+    
+    def format_output(self, list):
+        action, createdAt, repo_name, repo_url, public = list
+        print("----- User Activity -----")
+        print(f"action: {action}")
+        print(f"performaed at: {createdAt}")
+        print(f"repo name: {repo_name}")
+        print(f"repo url: {repo_url}")
+        print(f"visibility: {"public" if public else "private"}")
+        print("-------------------------")
+        # print(action, createdAt, repo_name, repo_url, public)
     
     def process_cli(self):
         parser = argparse.ArgumentParser(description="GitHub activity Tracker")
