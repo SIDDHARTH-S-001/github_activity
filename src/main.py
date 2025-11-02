@@ -32,23 +32,24 @@ class GitHubActivity():
         url = f"{self.base_url}{username}/events"
         querry_params = {"sort": "updated", "per_page":n_recent}
         event = requests.get(url=url, params=querry_params).json()
-        action, createdAt, public = event[0]["type"], event[0]["created_at"], event[0]["public"]
-        repo_name = str(event[0]["repo"]["name"]).split("/")[1]
-        repo_url =  f"{self.github_url}{username}/{repo_name}"
-        event_data = [action, createdAt, repo_name, repo_url, public]
-        self.format_output(event_data)
+        for i in range(len(event)):
+            event_id, action, createdAt, repo_name, public = event[i]["id"], event[i]["type"], event[i]["created_at"], event[i]["repo"]["name"], event[i]["public"]
+            event_data = [event_id, action, createdAt, repo_name, public]
+            self.format_output(event_data)
         return event_data
     
     def format_output(self, list):
-        action, createdAt, repo_name, repo_url, public = list
+        event_id, action, createdAt, repo_name, public = list
+        repo_name = str(repo_name).split("/")[1]
+        repo_url =  f"{self.github_url}{username}/{repo_name}"
         print("----- User Activity -----")
         print(f"action: {action}")
+        print(f"event id: {event_id}")
         print(f"performaed at: {createdAt}")
         print(f"repo name: {repo_name}")
         print(f"repo url: {repo_url}")
         print(f"visibility: {"public" if public else "private"}")
         print("-------------------------")
-        # print(action, createdAt, repo_name, repo_url, public)
     
     def process_cli(self):
         parser = argparse.ArgumentParser(description="GitHub activity Tracker")
