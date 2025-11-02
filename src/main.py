@@ -8,32 +8,15 @@ class GitHubActivity():
         self.filename = str(filename).lower() + ".json"
         self.github_url = "https://github.com/"
         self.base_url = "https://api.github.com/users/"
-
-    def get_specific_data(self, username, sort, route=None):
-        if route is None or route=="":
-            url = f"{self.base_url}{username}"
-        else:
-            url = f"{self.base_url}{username}/{route}"
-        querry_params = {"sort": "updated", "per_page": sort}
-        print(url)
-        user_data = requests.get(url=url, params=querry_params) # 'user_data' is the response and it is already a python dictionary.
-        self.to_json(user_data.json(), self.filename)
-        print(user_data.status_code)
-        
-    def load_credentials(self, pat_path):
-        if os.path.exists(pat_path):
-            with open(pat_path, mode="r") as read_file:
-                self.pat = read_file.read()
-                print(self.pat)
-        else:
-            print(f"The specified path {pat_path} doesn't exist")
-        
+       
     def get_activity(self, username, n_recent):
         url = f"{self.base_url}{username}/events"
         querry_params = {"sort": "updated", "per_page":n_recent}
         event = requests.get(url=url, params=querry_params).json()
+        print("----- Recent User Activity -----")
         for i in range(len(event)):
-            event_id, action, createdAt, repo_name, public = event[i]["id"], event[i]["type"], event[i]["created_at"], event[i]["repo"]["name"], event[i]["public"]
+            event_id, action, createdAt, repo_name, public = event[i]["id"], event[i]["type"], event[i]["created_at"], \
+                                                             event[i]["repo"]["name"], event[i]["public"]
             event_data = [event_id, action, createdAt, repo_name, public]
             self.format_output(event_data)
         return event_data
@@ -41,21 +24,22 @@ class GitHubActivity():
     def format_output(self, list):
         event_id, action, createdAt, repo_name, public = list
         repo_name = str(repo_name).split("/")[1]
-        repo_url =  f"{self.github_url}{username}/{repo_name}"
-        print("----- User Activity -----")
+        repo_url =  f"{self.github_url}{self.username}/{repo_name}"
+        time , date = createdAt[12:-1], createdAt[:10]
         print(f"action: {action}")
         print(f"event id: {event_id}")
-        print(f"performaed at: {createdAt}")
+        print(f"performed at: {time} on {date}")
         print(f"repo name: {repo_name}")
         print(f"repo url: {repo_url}")
         print(f"visibility: {"public" if public else "private"}")
-        print("-------------------------")
+        print("--------------------------------")
     
     def process_cli(self):
         parser = argparse.ArgumentParser(description="GitHub activity Tracker")
         parser.add_argument("username", type=str, help="username of the git user")
         parser.add_argument("arg1", nargs=1, type=int, help="last 'n' activities of the user")
         args = parser.parse_args()
+        self.username = args.username
         self.get_activity(args.username, args.arg1)
 
     def to_json(self, data, filename):
@@ -64,12 +48,6 @@ class GitHubActivity():
 
 if __name__ == "__main__":
     ga = GitHubActivity(filename="user_data")
-    username = "SIDDHARTH-S-001"
-    route = "events"
-    sort = 1
-    pat_path = "/home/kinisi/Documents/personal/pat2.txt"
-    # ga.get_specific_data(username=username, sort=sort, route=route)
-    # ga.load_credentials(pat_path=pat_path)
     ga.process_cli()
 
 
