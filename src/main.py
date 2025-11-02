@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os
 import json
 import requests
@@ -19,7 +20,6 @@ class GitHubActivity():
                                                              event[i]["repo"]["name"], event[i]["public"]
             event_data = [event_id, action, createdAt, repo_name, public]
             self.format_output(event_data)
-        return event_data
     
     def format_output(self, list):
         event_id, action, createdAt, repo_name, public = list
