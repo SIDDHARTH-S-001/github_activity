@@ -21,10 +21,10 @@ class GitHubActivity():
             event_data = [event_id, action, createdAt, repo_name, public]
             self.format_output(event_data)
     
-    def format_output(self, list):
-        event_id, action, createdAt, repo_name, public = list
-        repo_name = str(repo_name).split("/")[1]
-        repo_url =  f"{self.github_url}{self.username}/{repo_name}"
+    def format_output(self, event_data):
+        event_id, action, createdAt, repo_name, public = event_data
+        owner, repo_name = str(repo_name).split("/")
+        repo_url =  f"{self.github_url}{owner}/{repo_name}"
         time , date = createdAt[12:-1], createdAt[:10]
         print(f"action: {action}")
         print(f"event id: {event_id}")
@@ -37,7 +37,7 @@ class GitHubActivity():
     def process_cli(self):
         parser = argparse.ArgumentParser(description="GitHub activity Tracker")
         parser.add_argument("username", type=str, help="username of the git user")
-        parser.add_argument("arg1", nargs=1, type=int, help="last 'n' activities of the user")
+        parser.add_argument("arg1", type=int, help="last 'n' activities of the user")
         args = parser.parse_args()
         self.username = args.username
         self.get_activity(args.username, args.arg1)
