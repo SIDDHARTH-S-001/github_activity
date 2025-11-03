@@ -47,21 +47,21 @@ class GitHubActivity():
         if os.path.exists(self.filename):
             with open(self.filename, mode="r", encoding="utf-8") as read_file:
                 raw = read_file.read().strip()
-                # print(raw)
                 if raw == "":
+                    print("Empty file -> using []")
                     self.current_data = []
                     self.to_json(self.current_data, self.filename)
                     return self.current_data
-                else:
-                    try:
-                        self.current_data = json.load(read_file)
-                    except json.JSONDecodeError:
-                        self.current_data = []
-                        self.to_json(self.current_data, self.filename)
-                    return self.current_data
+                try:
+                    self.current_data = json.loads(raw)
+                    print("Loaded existing history OK")
+                except json.JSONDecodeError:
+                    print("Corrupt JSON -> resetting to []")
+                    self.current_data = []
+                return self.current_data
         else:
             self.current_data = []
-            self.to_json(self.filename)
+            self.to_json(self.current_data, self.filename)
             return self.current_data
 
     def process_datetime(self):
