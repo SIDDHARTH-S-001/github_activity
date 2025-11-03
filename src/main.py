@@ -30,8 +30,10 @@ class GitHubActivity():
             data.append(event_data)
             self.format_output(event_data)
         self.current_data.append([current_date_time, data])
-        self.to_json(self.current_data, self.filename); print("logging") if log else None
-    
+        if log:
+            self.to_json(self.current_data, self.filename)
+            print("logging") 
+            
     def format_output(self, event_data):       
         print(f"action: {event_data["action"]}")
         print(f"event id: {event_data["event_id"]}")
@@ -44,11 +46,23 @@ class GitHubActivity():
     def memory(self):
         if os.path.exists(self.filename):
             with open(self.filename, mode="r", encoding="utf-8") as read_file:
-                self.current_data = json.load(read_file)      
-                return self.current_data
+                raw = read_file.read().strip()
+                # print(raw)
+                if raw == "":
+                    self.current_data = []
+                    self.to_json(self.current_data, self.filename)
+                    return self.current_data
+                else:
+                    try:
+                        self.current_data = json.load(read_file)
+                    except json.JSONDecodeError:
+                        self.current_data = []
+                        self.to_json(self.current_data, self.filename)
+                    return self.current_data
         else:
+            self.current_data = []
             self.to_json(self.filename)
-            self.memory()
+            return self.current_data
 
     def process_datetime(self):
         date_time = datetime.datetime.now()
@@ -67,6 +81,7 @@ class GitHubActivity():
         self.get_activity(args.username, args.n_recent, args.log)
 
     def to_json(self, data, filename):
+        # print(data)
         with open(filename, mode="w", encoding="utf-8") as writefile:
             json.dump(data, writefile, indent=2)
 
